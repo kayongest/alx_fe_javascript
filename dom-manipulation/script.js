@@ -290,24 +290,38 @@ document.addEventListener("DOMContentLoaded", function () {
         text: post.title || post.body || "No text available",
         category: "server",
         author: "User " + (post.userId || "Unknown"),
-        version: post.id, // Using post id as version for simplicity
+        version: post.id,
       }));
 
       // 3. Handle conflicts and merge data
       await handleServerResponse(formattedServerQuotes);
 
-      // 4. Update last sync time
+      // 4. Update last sync time and show success message
       lastSyncTime = new Date();
-      updateSyncStatus(
-        `Last synced: ${lastSyncTime.toLocaleTimeString()}`,
-        "success"
-      );
+      updateSyncStatus("Quotes synced with server!", "success");
+
+      // Show temporary success notification
+      showTemporaryNotification("Quotes successfully synced with server!");
     } catch (error) {
       console.error("Sync error:", error);
       updateSyncStatus("Sync failed: " + error.message, "error");
     } finally {
       syncInProgress = false;
     }
+  }
+
+  // Add this new notification function
+  function showTemporaryNotification(message) {
+    const notification = document.createElement("div");
+    notification.className = "sync-notification";
+    notification.textContent = message;
+    document.body.appendChild(notification);
+
+    // Auto-hide after 3 seconds
+    setTimeout(() => {
+      notification.classList.add("fade-out");
+      setTimeout(() => notification.remove(), 500);
+    }, 3000);
   }
 
   // Replace the existing syncWithServer with this new version

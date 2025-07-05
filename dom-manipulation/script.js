@@ -121,12 +121,16 @@ document.addEventListener("DOMContentLoaded", function () {
 
   // Display a random quote from filtered list
   function showRandomQuote() {
+    const filterValue = categoryFilter.value; // Changed from selectedCategory
     let filteredQuotes = quotes;
 
-    if (currentFilter && currentFilter !== "all") {
-      filteredQuotes = quotes.filter(
-        (quote) => quote.category === currentFilter
-      );
+    if (filterValue && filterValue !== "all") {
+      filteredQuotes = [];
+      for (let i = 0; i < quotes.length; i++) {
+        if (quotes[i].category === filterValue) {
+          filteredQuotes.push(quotes[i]);
+        }
+      }
     }
 
     if (filteredQuotes.length === 0) {
@@ -152,6 +156,13 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // Store last viewed quote in sessionStorage
     sessionStorage.setItem("lastViewedQuote", JSON.stringify(quote));
+  }
+
+  // Filter quotes based on selected category
+  function filterQuotes() {
+    currentFilter = categoryFilter.value; // Using currentFilter consistently
+    saveFilter(currentFilter);
+    showRandomQuote();
   }
 
   // Populate categories dropdown without using map

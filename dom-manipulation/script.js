@@ -168,18 +168,29 @@ document.addEventListener("DOMContentLoaded", function () {
       .join("");
   }
 
-  // Export quotes to JSON file
+  // Export quotes to JSON file using Blob
   function exportQuotesToJson() {
     const dataStr = JSON.stringify(quotes, null, 2);
-    const dataUri =
-      "data:application/json;charset=utf-8," + encodeURIComponent(dataStr);
+
+    // Explicitly create a Blob
+    const blob = new Blob([dataStr], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
 
     const exportFileDefaultName = "quotes.json";
 
     const linkElement = document.createElement("a");
-    linkElement.setAttribute("href", dataUri);
-    linkElement.setAttribute("download", exportFileDefaultName);
+    linkElement.href = url;
+    linkElement.download = exportFileDefaultName;
+
+    // Append to body, click and then remove
+    document.body.appendChild(linkElement);
     linkElement.click();
+    document.body.removeChild(linkElement);
+
+    // Release the object URL
+    setTimeout(() => {
+      URL.revokeObjectURL(url);
+    }, 100);
   }
 
   // Import quotes from JSON file

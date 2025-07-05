@@ -236,135 +236,97 @@ document.addEventListener("DOMContentLoaded", function () {
   // SERVER SYNC FUNCTIONS (ADD THESE)
   // ========================
 
-  async function handleServerResponse(serverQuotes) {
-    // Check for conflicts
-    const conflicts = findConflicts(quotes, serverQuotes);
-
-    if (conflicts.length > 0) {
-      // Store conflict data for resolution
-      conflictData = {
-        serverQuotes: serverQuotes,
-        conflicts: conflicts,
-      };
-
-      // Show conflict resolution UI
-      showConflictNotice(conflicts.length);
-      return;
-    }
-
-    // No conflicts, proceed with merge
-    mergeQuotes(quotes, serverQuotes);
-    saveQuotes();
-
-    // Post our updated quotes to server
-    await sendQuotesToServer();
-  }
-
-  function findConflicts(localQuotes, serverQuotes) {
-    const conflicts = [];
-
-    // Create a map of server quotes by ID for easy lookup
-    const serverQuoteMap = {};
-    for (let i = 0; i < serverQuotes.length; i++) {
-      serverQuoteMap[serverQuotes[i].id] = serverQuotes[i];
-    }
-
-    // Check for conflicts
-    for (let i = 0; i < localQuotes.length; i++) {
-      const localQuote = localQuotes[i];
-      const serverQuote = serverQuoteMap[localQuote.id];
-
-      if (serverQuote && serverQuote.version > localQuote.version) {
-        conflicts.push({
-          id: localQuote.id,
-          local: localQuote,
-          server: serverQuote,
-        });
+  async function fetchQuotesFromServer() {
+    try {
+      const response = await fetch(`${SERVER_URL}?userId=1`);
+      if (!response.ok) {
+        throw new Error("Failed to fetch quotes from server");
       }
+      return await response.json();
+    } catch (error) {
+      console.error("Fetch error:", error);
+      updateSyncStatus("Failed to fetch quotes", "error");
+      return [];
     }
-
-    return conflicts;
   }
 
-  function mergeQuotes(localQuotes, serverQuotes) {
-    // Create a map of local quotes by ID for easy lookup
-    const localQuoteMap = {};
-    for (let i = 0; i < localQuotes.length; i++) {
-      localQuoteMap[localQuotes[i].id] = localQuotes[i];
-    }
-
-    // Start with server quotes as base
-    const mergedQuotes = [...serverQuotes];
-
-    // Add any local quotes that don't exist on server
-    for (let i = 0; i < localQuotes.length; i++) {
-      const localQuote = localQuotes[i];
-      if (!localQuoteMap[localQuote.id]) {
-        mergedQuotes.push(localQuote);
+  async function postQuotesToServer(quotesData) {
+    try {
+      const response = await fetch(SERVER_URL, {
+        method: "POST",
+        body: JSON.stringify(quotesData),
+        headers: {
+          "Content-type": "application/json; charset=UTF-8",
+        },
+      });
+      if (!response.ok) {
+        throw new Error("Failed to post quotes to server");
       }
+      return await response.json();
+    } catch (error) {
+      console.error("Post error:", error);
+      updateSyncStatus("Failed to sync quotes", "error");
+      return null;
     }
-
-    // Update the main quotes array
-    quotes = mergedQuotes;
   }
 
-  function showConflictNotice(conflictCount) {
-    conflictNotice.textContent = `${conflictCount} conflict(s) detected. Click to resolve.`;
-    conflictNotice.classList.remove("hidden");
-    conflictNotice.addEventListener("click", showConflictModal);
-  }
+  async function syncQuotes() {
+    if (syncInProgress) return;
 
-  function hideConflictNotice() {
-    conflictNotice.classList.add("hidden");
-    conflictNotice.removeEventListener("click", showConflictModal);
-  }
-
-  function showConflictModal() {
-    resolveConflictModal.classList.remove("hidden");
-  }
-
-  function hideConflictModal() {
-    resolveConflictModal.classList.add("hidden");
-  }
-
-  async function resolveConflict(resolution) {
-    hideConflictModal();
-    hideConflictNotice();
-
-    updateSyncStatus("Resolving conflicts...", "syncing");
+    syncInProgress = true;
+    updateSyncStatus("Syncing with server...", "syncing");
 
     try {
-      if (resolution === "local") {
-        // Keep local changes - overwrite server with our version
-        await sendQuotesToServer();
-      } else if (resolution === "server") {
-        // Accept server version - overwrite local with server version
-        quotes = [...conflictData.serverQuotes];
-        saveQuotes();
-      } else if (resolution === "merge") {
-        // Merge changes intelligently
-        mergeQuotes(quotes, conflictData.serverQuotes);
-        saveQuotes();
-        await sendQuotesToServer();
-      }
+      // 1. Fetch latest quotes from server
+      const serverQuotes = await fetchQuotesFromServer();
 
-      updateSyncStatus("Conflicts resolved", "success");
-      showRandomQuote();
+      // 2. Convert server data to our quote format
+      const formattedServerQuotes = serverQuotes.map((post) => ({
+        id: `server-${post.id}`,
+        text: post.title || post.body || "No text available",
+        category: "server",
+        author: "User " + (post.userId || "Unknown"),
+        version: post.id, // Using post id as version for simplicity
+      }));
+
+      // 3. Handle conflicts and merge data
+      await handleServerResponse(formattedServerQuotes);
+
+      // 4. Update last sync time
+      lastSyncTime = new Date();
+      updateSyncStatus(
+        `Last synced: ${lastSyncTime.toLocaleTimeString()}`,
+        "success"
+      );
     } catch (error) {
-      console.error("Conflict resolution error:", error);
-      updateSyncStatus("Conflict resolution failed", "error");
+      console.error("Sync error:", error);
+      updateSyncStatus("Sync failed: " + error.message, "error");
+    } finally {
+      syncInProgress = false;
     }
-
-    conflictData = null;
   }
 
-  function updateSyncStatus(message, status) {
-    syncStatus.textContent = message;
-    syncStatus.className = "sync-status";
+  // Replace the existing syncWithServer with this new version
+  async function syncWithServer() {
+    // For backward compatibility
+    return syncQuotes();
+  }
 
-    if (status) {
-      syncStatus.classList.add(status);
-    }
+  // Update manualSync to use syncQuotes
+  function manualSync() {
+    syncQuotes();
+  }
+
+  // Update sendQuotesToServer to use postQuotesToServer
+  async function sendQuotesToServer() {
+    // Convert our quotes to server format
+    const serverFormatQuotes = quotes.map((quote) => ({
+      title: quote.text,
+      body: `Category: ${quote.category}, Author: ${quote.author}`,
+      userId: 1, // Mock user ID
+    }));
+
+    return postQuotesToServer(serverFormatQuotes);
   }
   // Start the application
   init();

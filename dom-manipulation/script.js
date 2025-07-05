@@ -233,86 +233,8 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 
   // ========================
-  // SERVER SYNC FUNCTIONS
+  // SERVER SYNC FUNCTIONS (ADD THESE)
   // ========================
-
-  function manualSync() {
-    syncWithServer();
-  }
-
-  async function syncWithServer() {
-    if (syncInProgress) {
-      updateSyncStatus("Syncing already in progress", "syncing");
-      return;
-    }
-
-    syncInProgress = true;
-    updateSyncStatus("Syncing with server...", "syncing");
-
-    try {
-      // Simulate fetching from server
-      const serverQuotes = await fetchServerQuotes();
-
-      // Check for conflicts and merge changes
-      await handleServerResponse(serverQuotes);
-
-      lastSyncTime = new Date();
-      pendingChanges = false;
-      updateSyncStatus(
-        `Last synced: ${lastSyncTime.toLocaleTimeString()}`,
-        "success"
-      );
-    } catch (error) {
-      console.error("Sync error:", error);
-      updateSyncStatus("Sync failed: " + error.message, "error");
-    } finally {
-      syncInProgress = false;
-    }
-  }
-
-  async function fetchServerQuotes() {
-    // In a real app, this would be a fetch() call to your actual server
-    // For simulation, we'll use localStorage to mock server behavior
-
-    // Simulate network delay
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-
-    // Get "server" data from a different localStorage key
-    const serverData = localStorage.getItem("serverQuotes");
-
-    if (serverData) {
-      return JSON.parse(serverData);
-    } else {
-      // Initialize server data with some default quotes
-      const defaultQuotes = [
-        {
-          id: "server1",
-          text: "Simulated server quote 1",
-          category: "server",
-          author: "System",
-          version: 1,
-        },
-        {
-          id: "server2",
-          text: "Simulated server quote 2",
-          category: "server",
-          author: "System",
-          version: 1,
-        },
-      ];
-      localStorage.setItem("serverQuotes", JSON.stringify(defaultQuotes));
-      return defaultQuotes;
-    }
-  }
-
-  async function postQuotesToServer() {
-    // Simulate posting to server
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-
-    // Save our quotes as the new server state
-    localStorage.setItem("serverQuotes", JSON.stringify(quotes));
-    return quotes;
-  }
 
   async function handleServerResponse(serverQuotes) {
     // Check for conflicts
@@ -335,7 +257,7 @@ document.addEventListener("DOMContentLoaded", function () {
     saveQuotes();
 
     // Post our updated quotes to server
-    await postQuotesToServer();
+    await sendQuotesToServer();
   }
 
   function findConflicts(localQuotes, serverQuotes) {
@@ -389,7 +311,6 @@ document.addEventListener("DOMContentLoaded", function () {
   function showConflictNotice(conflictCount) {
     conflictNotice.textContent = `${conflictCount} conflict(s) detected. Click to resolve.`;
     conflictNotice.classList.remove("hidden");
-
     conflictNotice.addEventListener("click", showConflictModal);
   }
 
@@ -415,7 +336,7 @@ document.addEventListener("DOMContentLoaded", function () {
     try {
       if (resolution === "local") {
         // Keep local changes - overwrite server with our version
-        await postQuotesToServer();
+        await sendQuotesToServer();
       } else if (resolution === "server") {
         // Accept server version - overwrite local with server version
         quotes = [...conflictData.serverQuotes];
@@ -424,7 +345,7 @@ document.addEventListener("DOMContentLoaded", function () {
         // Merge changes intelligently
         mergeQuotes(quotes, conflictData.serverQuotes);
         saveQuotes();
-        await postQuotesToServer();
+        await sendQuotesToServer();
       }
 
       updateSyncStatus("Conflicts resolved", "success");
@@ -445,7 +366,6 @@ document.addEventListener("DOMContentLoaded", function () {
       syncStatus.classList.add(status);
     }
   }
-
   // Start the application
   init();
 });

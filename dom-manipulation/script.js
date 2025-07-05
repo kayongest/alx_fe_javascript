@@ -2,12 +2,6 @@ document.addEventListener("DOMContentLoaded", function () {
   // DOM Elements
   const quoteDisplay = document.getElementById("quoteDisplay");
   const newQuoteBtn = document.getElementById("newQuote");
-  const showAddFormBtn = document.getElementById("showAddForm");
-  const addQuoteForm = document.getElementById("addQuoteForm");
-  const addQuoteBtn = document.getElementById("addQuote");
-  const cancelAddBtn = document.getElementById("cancelAdd");
-  const newQuoteText = document.getElementById("newQuoteText");
-  const newQuoteCategory = document.getElementById("newQuoteCategory");
   const categoryFilter = document.getElementById("categoryFilter");
 
   // Quotes database
@@ -27,25 +21,15 @@ document.addEventListener("DOMContentLoaded", function () {
       category: "wisdom",
       author: "Aristotle",
     },
-    {
-      text: "The only true wisdom is in knowing you know nothing.",
-      category: "wisdom",
-      author: "Socrates",
-    },
-    {
-      text: "Believe you can and you're halfway there.",
-      category: "motivation",
-      author: "Theodore Roosevelt",
-    },
   ];
 
   // Initialize the application
   function init() {
+    // Create and show the add quote form
+    createAddQuoteForm();
+
     // Set up event listeners
     newQuoteBtn.addEventListener("click", showRandomQuote);
-    showAddFormBtn.addEventListener("click", showAddQuoteForm);
-    addQuoteBtn.addEventListener("click", addQuote);
-    cancelAddBtn.addEventListener("click", hideAddQuoteForm);
     categoryFilter.addEventListener("change", showRandomQuote);
 
     // Initialize categories dropdown
@@ -55,7 +39,7 @@ document.addEventListener("DOMContentLoaded", function () {
     showRandomQuote();
   }
 
-  // Display a random quote
+  // Display a random quote (required function)
   function showRandomQuote() {
     const selectedCategory = categoryFilter.value;
     let filteredQuotes = quotes;
@@ -74,54 +58,59 @@ document.addEventListener("DOMContentLoaded", function () {
     const randomIndex = Math.floor(Math.random() * filteredQuotes.length);
     const quote = filteredQuotes[randomIndex];
 
-    // Create quote HTML
     const quoteHTML = `
             <div class="quote-category">${quote.category}</div>
             <p class="quote-text">"${quote.text}"</p>
             <p class="quote-author">— ${quote.author}</p>
         `;
 
-    // Apply animation
-    quoteDisplay.classList.remove("fade-in");
-    void quoteDisplay.offsetWidth; // Trigger reflow
     quoteDisplay.innerHTML = quoteHTML;
-    quoteDisplay.classList.add("fade-in");
   }
 
-  // Show the add quote form
-  function showAddQuoteForm() {
-    addQuoteForm.classList.remove("hidden");
-    newQuoteText.focus();
-  }
+  // Create the add quote form (required function)
+  function createAddQuoteForm() {
+    const formHTML = `
+            <div id="addQuoteForm" class="add-form">
+                <h3>Add New Quote</h3>
+                <textarea id="newQuoteText" placeholder="Enter quote text" required></textarea>
+                <input type="text" id="newQuoteCategory" placeholder="Enter category" required>
+                <div class="form-actions">
+                    <button id="addQuote">Add Quote</button>
+                </div>
+            </div>
+        `;
 
-  // Hide the add quote form
-  function hideAddQuoteForm() {
-    addQuoteForm.classList.add("hidden");
-    newQuoteText.value = "";
-    newQuoteCategory.value = "";
-  }
+    // Insert the form after the quote display
+    quoteDisplay.insertAdjacentHTML("afterend", formHTML);
 
-  // Add a new quote
-  function addQuote() {
-    const text = newQuoteText.value.trim();
-    const category = newQuoteCategory.value.trim().toLowerCase();
+    // Set up event listener for the add button
+    document.getElementById("addQuote").addEventListener("click", function () {
+      const text = document.getElementById("newQuoteText").value.trim();
+      const category = document
+        .getElementById("newQuoteCategory")
+        .value.trim()
+        .toLowerCase();
 
-    if (!text || !category) {
-      alert("Please enter both quote text and category");
-      return;
-    }
+      if (!text || !category) {
+        alert("Please enter both quote text and category");
+        return;
+      }
 
-    // Add new quote
-    quotes.push({
-      text: text,
-      category: category,
-      author: "Anonymous",
+      // Add new quote
+      quotes.push({
+        text: text,
+        category: category,
+        author: "Anonymous",
+      });
+
+      // Clear form
+      document.getElementById("newQuoteText").value = "";
+      document.getElementById("newQuoteCategory").value = "";
+
+      // Update UI
+      updateCategoryFilter();
+      showRandomQuote();
     });
-
-    // Update UI
-    hideAddQuoteForm();
-    updateCategoryFilter();
-    showRandomQuote();
   }
 
   // Update the category filter dropdown

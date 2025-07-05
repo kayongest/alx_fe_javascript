@@ -7,57 +7,9 @@
     <link rel="stylesheet" href="styles.css" />
   </head>
   <body>
-    <div class="container">
-      <h1>Dynamic Quote Generator</h1>
-
-      <div class="controls">
-        <div class="form-group">
-          <label for="category-select">Select Category:</label>
-          <select id="category-select"></select>
-          <button id="new-category-btn">+ New Category</button>
-        </div>
-
-        <div class="form-group">
-          <button id="new-quote-btn">Show Random Quote</button>
-          <button id="add-quote-btn">Add New Quote</button>
-        </div>
-      </div>
-
-      <div id="quote-display" class="quote-display"></div>
-
-      <div id="add-quote-form" class="add-quote-form hidden">
-        <h2>Add New Quote</h2>
-        <div class="form-group">
-          <label for="new-quote-category">Category:</label>
-          <select id="new-quote-category"></select>
-        </div>
-        <div class="form-group">
-          <label for="new-quote-text">Quote Text:</label>
-          <textarea id="new-quote-text" rows="3" required></textarea>
-        </div>
-        <div class="form-group">
-          <label for="new-quote-author">Author:</label>
-          <input type="text" id="new-quote-author" required />
-        </div>
-        <div class="form-actions">
-          <button id="save-quote-btn">Save Quote</button>
-          <button id="cancel-quote-btn">Cancel</button>
-        </div>
-      </div>
-
-      <div id="add-category-form" class="add-category-form hidden">
-        <h2>Add New Category</h2>
-        <div class="form-group">
-          <label for="new-category-name">Category Name:</label>
-          <input type="text" id="new-category-name" required />
-        </div>
-        <div class="form-actions">
-          <button id="save-category-btn">Save Category</button>
-          <button id="cancel-category-btn">Cancel</button>
-        </div>
-      </div>
-    </div>
-
+    <h1>Dynamic Quote Generator</h1>
+    <div id="quoteDisplay"></div>
+    <button id="newQuote">Show New Quote</button>
     <script src="script.js"></script>
   </body>
 </html>

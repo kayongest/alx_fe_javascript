@@ -2,7 +2,7 @@ document.addEventListener("DOMContentLoaded", function () {
   // DOM Elements
   const quoteDisplay = document.getElementById("quoteDisplay");
   const newQuoteBtn = document.getElementById("newQuote");
-  const categoryFilter = document.getElementById("categoryFilter");
+  const container = document.querySelector(".container");
 
   // Quotes database
   let quotes = [
@@ -25,23 +25,24 @@ document.addEventListener("DOMContentLoaded", function () {
 
   // Initialize the application
   function init() {
+    // Create category filter dropdown
+    createCategoryFilter();
+
     // Create and show the add quote form
     createAddQuoteForm();
 
     // Set up event listeners
     newQuoteBtn.addEventListener("click", showRandomQuote);
-    categoryFilter.addEventListener("change", showRandomQuote);
-
-    // Initialize categories dropdown
-    updateCategoryFilter();
 
     // Show initial quote
     showRandomQuote();
   }
 
-  // Display a random quote (required function)
+  // Display a random quote
   function showRandomQuote() {
-    const selectedCategory = categoryFilter.value;
+    const categoryFilter = document.getElementById("categoryFilter");
+    const selectedCategory = categoryFilter ? categoryFilter.value : "all";
+
     let filteredQuotes = quotes;
 
     if (selectedCategory !== "all") {
@@ -58,38 +59,74 @@ document.addEventListener("DOMContentLoaded", function () {
     const randomIndex = Math.floor(Math.random() * filteredQuotes.length);
     const quote = filteredQuotes[randomIndex];
 
-    const quoteHTML = `
-            <div class="quote-category">${quote.category}</div>
-            <p class="quote-text">"${quote.text}"</p>
-            <p class="quote-author">— ${quote.author}</p>
-        `;
+    // Clear previous quote
+    while (quoteDisplay.firstChild) {
+      quoteDisplay.removeChild(quoteDisplay.firstChild);
+    }
 
-    quoteDisplay.innerHTML = quoteHTML;
+    // Create new quote elements
+    const categoryDiv = document.createElement("div");
+    categoryDiv.className = "quote-category";
+    categoryDiv.textContent = quote.category;
+
+    const textPara = document.createElement("p");
+    textPara.className = "quote-text";
+    textPara.textContent = `"${quote.text}"`;
+
+    const authorPara = document.createElement("p");
+    authorPara.className = "quote-author";
+    authorPara.textContent = `— ${quote.author}`;
+
+    // Append elements to display
+    quoteDisplay.appendChild(categoryDiv);
+    quoteDisplay.appendChild(textPara);
+    quoteDisplay.appendChild(authorPara);
   }
 
-  // Create the add quote form (required function)
+  // Create the add quote form
   function createAddQuoteForm() {
-    const formHTML = `
-            <div id="addQuoteForm" class="add-form">
-                <h3>Add New Quote</h3>
-                <textarea id="newQuoteText" placeholder="Enter quote text" required></textarea>
-                <input type="text" id="newQuoteCategory" placeholder="Enter category" required>
-                <div class="form-actions">
-                    <button id="addQuote">Add Quote</button>
-                </div>
-            </div>
-        `;
+    // Create form container
+    const formDiv = document.createElement("div");
+    formDiv.id = "addQuoteForm";
+    formDiv.className = "add-form";
 
-    // Insert the form after the quote display
-    quoteDisplay.insertAdjacentHTML("afterend", formHTML);
+    // Create form elements
+    const heading = document.createElement("h3");
+    heading.textContent = "Add New Quote";
 
-    // Set up event listener for the add button
-    document.getElementById("addQuote").addEventListener("click", function () {
-      const text = document.getElementById("newQuoteText").value.trim();
-      const category = document
-        .getElementById("newQuoteCategory")
-        .value.trim()
-        .toLowerCase();
+    const textArea = document.createElement("textarea");
+    textArea.id = "newQuoteText";
+    textArea.placeholder = "Enter quote text";
+    textArea.required = true;
+
+    const categoryInput = document.createElement("input");
+    categoryInput.type = "text";
+    categoryInput.id = "newQuoteCategory";
+    categoryInput.placeholder = "Enter category";
+    categoryInput.required = true;
+
+    const actionsDiv = document.createElement("div");
+    actionsDiv.className = "form-actions";
+
+    const addButton = document.createElement("button");
+    addButton.id = "addQuote";
+    addButton.textContent = "Add Quote";
+
+    // Build form structure
+    actionsDiv.appendChild(addButton);
+
+    formDiv.appendChild(heading);
+    formDiv.appendChild(textArea);
+    formDiv.appendChild(categoryInput);
+    formDiv.appendChild(actionsDiv);
+
+    // Insert form into DOM
+    container.appendChild(formDiv);
+
+    // Add event listener
+    addButton.addEventListener("click", function () {
+      const text = textArea.value.trim();
+      const category = categoryInput.value.trim().toLowerCase();
 
       if (!text || !category) {
         alert("Please enter both quote text and category");
@@ -104,8 +141,8 @@ document.addEventListener("DOMContentLoaded", function () {
       });
 
       // Clear form
-      document.getElementById("newQuoteText").value = "";
-      document.getElementById("newQuoteCategory").value = "";
+      textArea.value = "";
+      categoryInput.value = "";
 
       // Update UI
       updateCategoryFilter();
@@ -113,25 +150,69 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   }
 
+  // Create category filter dropdown
+  function createCategoryFilter() {
+    const controlsDiv = document.querySelector(".controls");
+
+    // Create select element
+    const select = document.createElement("select");
+    select.id = "categoryFilter";
+
+    // Create default option
+    const defaultOption = document.createElement("option");
+    defaultOption.value = "all";
+    defaultOption.textContent = "All Categories";
+    select.appendChild(defaultOption);
+
+    // Add category options
+    const categories = ["inspiration", "life", "wisdom"]; // Initial categories
+    categories.forEach((category) => {
+      const option = document.createElement("option");
+      option.value = category;
+      option.textContent = category.charAt(0).toUpperCase() + category.slice(1);
+      select.appendChild(option);
+    });
+
+    // Add event listener
+    select.addEventListener("change", showRandomQuote);
+
+    // Insert at beginning of controls
+    controlsDiv.insertBefore(select, controlsDiv.firstChild);
+  }
+
   // Update the category filter dropdown
   function updateCategoryFilter() {
+    const select = document.getElementById("categoryFilter");
+    if (!select) return;
+
+    // Get current selection
+    const currentSelection = select.value;
+
+    // Clear existing options (keep first 'all' option)
+    while (select.options.length > 1) {
+      select.remove(1);
+    }
+
     // Get all unique categories
-    const categories = ["all"];
+    const categories = [];
     quotes.forEach((quote) => {
       if (!categories.includes(quote.category)) {
         categories.push(quote.category);
       }
     });
 
-    // Update dropdown
-    categoryFilter.innerHTML = categories
-      .map(
-        (cat) =>
-          `<option value="${cat}">${
-            cat.charAt(0).toUpperCase() + cat.slice(1)
-          }</option>`
-      )
-      .join("");
+    // Add category options
+    categories.forEach((category) => {
+      const option = document.createElement("option");
+      option.value = category;
+      option.textContent = category.charAt(0).toUpperCase() + category.slice(1);
+      select.appendChild(option);
+    });
+
+    // Restore selection if still available
+    if (categories.includes(currentSelection)) {
+      select.value = currentSelection;
+    }
   }
 
   // Start the application

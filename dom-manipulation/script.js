@@ -238,7 +238,11 @@ document.addEventListener("DOMContentLoaded", function () {
 
   async function fetchQuotesFromServer() {
     try {
-      const response = await fetch(`${SERVER_URL}?userId=1`);
+      const response = await fetch(`${SERVER_URL}?userId=1`, {
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
       if (!response.ok) {
         throw new Error("Failed to fetch quotes from server");
       }
@@ -256,7 +260,7 @@ document.addEventListener("DOMContentLoaded", function () {
         method: "POST",
         body: JSON.stringify(quotesData),
         headers: {
-          "Content-type": "application/json; charset=UTF-8",
+          "Content-Type": "application/json; charset=UTF-8",
         },
       });
       if (!response.ok) {

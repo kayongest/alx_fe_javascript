@@ -126,6 +126,74 @@ button:hover {
     background-color: #d35400;
 }
 
+.sync-status {
+    padding: 8px;
+    margin-bottom: 15px;
+    border-radius: 4px;
+    text-align: center;
+    background-color: #f8f9fa;
+}
+
+.sync-status.syncing {
+    background-color: #fff3cd;
+    color: #856404;
+}
+
+.sync-status.success {
+    background-color: #d4edda;
+    color: #155724;
+}
+
+.sync-status.error {
+    background-color: #f8d7da;
+    color: #721c24;
+}
+
+.conflict-notice {
+    padding: 10px;
+    margin-bottom: 15px;
+    border-radius: 4px;
+    background-color: #fff3cd;
+    color: #856404;
+}
+
+.modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.modal-content {
+    background-color: white;
+    padding: 20px;
+    border-radius: 8px;
+    width: 80%;
+    max-width: 500px;
+}
+
+.conflict-options {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 20px;
+}
+
+#manualSync {
+    background-color: #17a2b8;
+}
+
+#manualSync:hover {
+    background-color: #138496;
+}
+
+
 textarea, input[type="text"] {
     width: 100%;
     padding: 10px;

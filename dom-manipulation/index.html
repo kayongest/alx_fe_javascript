@@ -10,12 +10,16 @@
     <div class="container">
       <h1>Dynamic Quote Generator</h1>
 
+      <div id="sync-status" class="sync-status">Syncing with server...</div>
+      <div id="conflict-notice" class="conflict-notice hidden"></div>
+
       <div class="controls">
         <select id="categoryFilter">
           <option value="all">All Categories</option>
         </select>
         <button id="newQuote">Show Random Quote</button>
         <button id="showAddForm">Add New Quote</button>
+        <button id="manualSync">Sync Now</button>
       </div>
 
       <div id="quoteDisplay" class="quote-display"></div>
@@ -36,6 +40,21 @@
         <div class="form-actions">
           <button id="addQuote">Add Quote</button>
           <button id="cancelAdd">Cancel</button>
+        </div>
+      </div>
+
+      <div id="resolveConflictModal" class="modal hidden">
+        <div class="modal-content">
+          <h3>Conflict Detected</h3>
+          <p>
+            Your local version differs from the server version. Which would you
+            like to keep?
+          </p>
+          <div class="conflict-options">
+            <button id="keepLocal">Keep My Changes</button>
+            <button id="keepServer">Use Server Version</button>
+            <button id="mergeChanges">Merge Changes</button>
+          </div>
         </div>
       </div>
     </div>

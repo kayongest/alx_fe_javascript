@@ -154,6 +154,36 @@ document.addEventListener("DOMContentLoaded", function () {
     sessionStorage.setItem("lastViewedQuote", JSON.stringify(quote));
   }
 
+  // Populate categories dropdown without using map
+  function populateCategories() {
+    // Clear existing options except "All Categories"
+    while (categoryFilter.options.length > 1) {
+      categoryFilter.remove(1);
+    }
+
+    // Get all unique categories from quotes
+    const categories = [];
+    quotes.forEach((quote) => {
+      if (!categories.includes(quote.category)) {
+        categories.push(quote.category);
+      }
+    });
+
+    // Add categories to dropdown without map
+    for (let i = 0; i < categories.length; i++) {
+      const category = categories[i];
+      const option = document.createElement("option");
+      option.value = category;
+      option.textContent = category.charAt(0).toUpperCase() + category.slice(1);
+      categoryFilter.appendChild(option);
+    }
+
+    // Set to last selected filter
+    if (currentFilter && currentFilter !== "all") {
+      categoryFilter.value = currentFilter;
+    }
+  }
+
   // Show the add quote form
   function showAddQuoteForm() {
     addQuoteForm.classList.remove("hidden");
